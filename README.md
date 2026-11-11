@@ -86,17 +86,27 @@ cd Who-Pays-
 # 2. Install dependencies
 npm install
 
-# 3. Verify types and code quality
+# 3. Start the app (Recommended: LAN mode with fresh cache)
+npx expo start --host lan --clear
+```
+
+> [!TIP]
+> **Always use `npx expo start --host lan --clear`** instead of default `expo start`. This automatically broadcasts the Metro server across your local Wi-Fi network and clears stale bundler caches, ensuring physical phones can scan the QR code and connect reliably.
+>
+> In the terminal menu:
+> - Press **`a`** to open on a connected Android phone or emulator.
+> - Press **`w`** to open instantly in your web browser.
+> - Scan the on-screen QR code with **Expo Go** on your phone.
+
+#### 🧪 Running Automated Tests (Optional)
+```bash
+# Run all game engine unit tests
+npm test
+
+# Run strict TypeScript check and ESLint
 npm run typecheck
 npm run lint
-
-# 4. Run automated unit tests
-node --test src/features/games/*/__tests__/*.test.ts
-
-# 5. Start the Metro development server
-npm start
 ```
-*In the terminal menu, press `a` to open in an Android emulator/device, `w` to open in a web browser, or scan the QR code in Expo Go.*
 
 ---
 
