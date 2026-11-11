@@ -1,7 +1,7 @@
 # 🎲 Who Pays?
 
 ### Don't argue over who pays. Let the game decide.
-**Install App :[Link](https://expo.dev/accounts/sin_v/projects/who-pays/builds/88df8c0c-6f74-4df8-9c1f-d497faa170ba)**
+**Install App :[Link](https://expo.dev/accounts/sin_v/projects/who-pays/builds/870f0392-691c-4f82-bdc8-39195392a56e)**
 
 **Who Pays?** is a local multiplayer party game that turns everyday group dilemmas into competitive mini-games. From deciding who pays the restaurant bill to choosing who takes out the trash or controls the aux, it makes awkward decisions entertaining.
 
