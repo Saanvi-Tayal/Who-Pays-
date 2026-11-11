@@ -23,7 +23,6 @@ import { RootStackScreenProps } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { triggerHaptic } from '@/utils/haptics';
-import { playTouchSound, playBombExplosionSound } from '@/utils/soundEffects';
 
 export const TapFrenzyArenaScreen: React.FC<RootStackScreenProps<'TapFrenzyArena'>> = ({
   navigation,
@@ -63,7 +62,6 @@ export const TapFrenzyArenaScreen: React.FC<RootStackScreenProps<'TapFrenzyArena
       }
 
       triggerHaptic('error');
-      playBombExplosionSound().catch(() => {});
 
       const loserId = finalState.loserSlotId || players[0].id;
       recordMatchResult({
@@ -107,7 +105,6 @@ export const TapFrenzyArenaScreen: React.FC<RootStackScreenProps<'TapFrenzyArena
   const handleTapZone = (slotId: string) => {
     if (gameState.phase !== 'active') return;
     triggerHaptic('light');
-    playTouchSound().catch(() => {});
 
     scaleAnim.value = withSequence(
       withSpring(1.08),

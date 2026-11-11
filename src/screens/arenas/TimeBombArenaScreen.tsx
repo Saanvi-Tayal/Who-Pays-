@@ -27,11 +27,6 @@ import { RootStackScreenProps } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { triggerHaptic } from '@/utils/haptics';
-import {
-  playBombTickSound,
-  playBombWarningSound,
-  playBombExplosionSound,
-} from '@/utils/soundEffects';
 
 export const TimeBombArenaScreen: React.FC<RootStackScreenProps<'TimeBombArena'>> = ({
   navigation,
@@ -97,7 +92,6 @@ export const TimeBombArenaScreen: React.FC<RootStackScreenProps<'TimeBombArena'>
       );
 
       triggerHaptic('error');
-      playBombExplosionSound();
       Vibration.vibrate([0, 100, 80, 200]);
 
       // Record match outcome
@@ -128,7 +122,6 @@ export const TimeBombArenaScreen: React.FC<RootStackScreenProps<'TimeBombArena'>
   // Start the fuse
   const handleStartFuse = () => {
     triggerHaptic('medium');
-    playBombTickSound();
     const started = startTimeBomb(gameState);
     setGameState(started);
 
@@ -153,7 +146,6 @@ export const TimeBombArenaScreen: React.FC<RootStackScreenProps<'TimeBombArena'>
           );
           if (next.timeRemainingMs % 600 < 100) {
             triggerHaptic('heavy');
-            playBombWarningSound();
           }
         }
 
@@ -172,7 +164,6 @@ export const TimeBombArenaScreen: React.FC<RootStackScreenProps<'TimeBombArena'>
     if (gameState.phase !== 'active' && gameState.phase !== 'warning') return;
 
     triggerHaptic('selection');
-    playBombTickSound();
     const passed = passTimeBomb(gameState, players.length);
     setGameState(passed);
 

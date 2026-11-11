@@ -11,14 +11,9 @@ import { RootStackScreenProps } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { triggerHaptic } from '@/utils/haptics';
-import { playVerdictFanfareSound } from '@/utils/soundEffects';
 
 export const VerdictScreen: React.FC<RootStackScreenProps<'Verdict'>> = ({ navigation }) => {
   const { slots, lastResult, selectedGame, selectedMode, resetRound } = useSessionStore();
-
-  React.useEffect(() => {
-    playVerdictFanfareSound().catch(() => {});
-  }, []);
 
   // Find loser slot
   const loserSlot = slots.find((s) => s.id === lastResult?.loserSlotId) || slots[0];

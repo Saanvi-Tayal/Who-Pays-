@@ -21,7 +21,6 @@
     },
     "plugins": [
       "expo-status-bar",
-      "expo-audio",
       "expo-asset",
       [
         "expo-splash-screen",

@@ -23,11 +23,6 @@ import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { triggerHaptic } from '@/utils/haptics';
 import {
-  playTouchSound,
-  playBombWarningSound,
-  playBombExplosionSound,
-} from '@/utils/soundEffects';
-import {
   createReactionState,
   playerPressPad,
   playerReleasePad,
@@ -81,7 +76,6 @@ export const ReactionStandoffArenaScreen: React.FC<RootStackScreenProps<'Reactio
           const next = tickReactionWait(prev, 50, activeIds, Date.now());
           if (next.phase === 'flashed' && prev.phase === 'waiting') {
             triggerHaptic('heavy');
-            playBombWarningSound().catch(() => {});
           }
           return next;
         });
@@ -100,7 +94,6 @@ export const ReactionStandoffArenaScreen: React.FC<RootStackScreenProps<'Reactio
     (slotId: string) => {
       if (gameState.phase !== 'ready' && gameState.phase !== 'waiting') return;
       triggerHaptic('light');
-      playTouchSound().catch(() => {});
       setGameState((prev) => playerPressPad(prev, slotId, activeIds));
     },
     [gameState.phase, activeIds]
@@ -116,13 +109,11 @@ export const ReactionStandoffArenaScreen: React.FC<RootStackScreenProps<'Reactio
       if (gameState.phase === 'waiting') {
         // FALSE START!
         triggerHaptic('heavy');
-        playBombExplosionSound().catch(() => {});
         setGameState((prev) => playerReleasePad(prev, slotId, Date.now(), activeIds));
         return;
       }
       if (gameState.phase === 'flashed') {
         triggerHaptic('medium');
-        playTouchSound().catch(() => {});
         setGameState((prev) => playerReleasePad(prev, slotId, Date.now(), activeIds));
       }
     },

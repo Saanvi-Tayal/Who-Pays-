@@ -26,7 +26,6 @@ import { RootStackScreenProps } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { triggerHaptic } from '@/utils/haptics';
-import { playRouletteClickSound, playVerdictFanfareSound } from '@/utils/soundEffects';
 
 export const RouletteArenaScreen: React.FC<RootStackScreenProps<'RouletteArena'>> = ({
   navigation,
@@ -56,7 +55,6 @@ export const RouletteArenaScreen: React.FC<RootStackScreenProps<'RouletteArena'>
     setGameState(resolved);
     setIsSpinning(false);
     triggerHaptic('error');
-    playVerdictFanfareSound().catch(() => {});
 
     // Record outcome into store
     if (resolved.loserSlotId) {
@@ -91,15 +89,6 @@ export const RouletteArenaScreen: React.FC<RootStackScreenProps<'RouletteArena'>
       8
     );
     currentRotationRef.current = targetRotation;
-
-    // Play audio ratchet clicks during spin
-    playRouletteClickSound().catch(() => {});
-    const clickInterval = setInterval(() => {
-      playRouletteClickSound().catch(() => {});
-    }, 130);
-    setTimeout(() => {
-      clearInterval(clickInterval);
-    }, spinDurationMs);
 
     // Needle wiggle while spinning
     needleWiggle.value = withSequence(
