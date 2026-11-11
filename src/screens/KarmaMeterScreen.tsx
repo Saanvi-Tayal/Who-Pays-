@@ -93,6 +93,19 @@ export const KarmaMeterScreen: React.FC<RootStackScreenProps<'KarmaMeter'>> = ({
       const stats = statsMap[player.id] || { losses: 0, wins: 0 };
       const paletteItem = PALETTE[idx % PALETTE.length];
 
+      if (circleHistory.length === 0) {
+        return {
+          id: player.id,
+          name: player.name,
+          avatarKey: player.avatarKey || 'AV-01',
+          title: 'The Contender',
+          subtitle: '(0 pays • Ready)',
+          color: paletteItem.color,
+          bgColor: paletteItem.bg,
+          hasCrown: false,
+        };
+      }
+
       let title = 'The Contender';
       let subtitle = `(${stats.losses} pays)`;
       let hasCrown = false;
@@ -210,6 +223,21 @@ export const KarmaMeterScreen: React.FC<RootStackScreenProps<'KarmaMeter'>> = ({
             })}
           </ScrollView>
         </View>
+
+        {/* Fresh Slate Banner if 0 games recorded */}
+        {circleHistory.length === 0 && (
+          <View style={styles.freshSlateBanner}>
+            <ThemedText style={styles.freshSlateEmoji}>🌟</ThemedText>
+            <View style={styles.freshSlateTextWrap}>
+              <ThemedText variant="body" style={styles.freshSlateTitle}>
+                Fresh Karma Slate!
+              </ThemedText>
+              <ThemedText variant="caption" style={styles.freshSlateSubtitle}>
+                No games played yet in {activeCircle.name}. Play matches to unlock ATM, Lucky One, and Chooser badges!
+              </ThemedText>
+            </View>
+          </View>
+        )}
 
         {/* Dynamic Player Archetype Cards */}
         <View style={styles.cardsGrid}>
@@ -479,5 +507,32 @@ const styles = StyleSheet.create({
   },
   bottomNavSection: {
     marginTop: spacing.xs,
+  },
+  freshSlateBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 234, 0, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 234, 0, 0.25)',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.md,
+  },
+  freshSlateEmoji: {
+    fontSize: 24,
+  },
+  freshSlateTextWrap: {
+    flex: 1,
+  },
+  freshSlateTitle: {
+    color: '#FFEA00',
+    fontWeight: '800',
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  freshSlateSubtitle: {
+    color: colors.textSecondary,
+    fontSize: 12,
   },
 });

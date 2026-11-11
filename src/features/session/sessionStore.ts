@@ -79,24 +79,17 @@ interface SessionState {
 }
 
 const STORAGE_KEYS = {
-  SLOTS: '@who_pays_slots_v3',
-  HISTORY: '@who_pays_history_v3',
-  CIRCLES: '@who_pays_circles_v3',
-  ACTIVE_CIRCLE: '@who_pays_active_circle_v3',
-  CIRCLE_ROSTERS: '@who_pays_circle_rosters_v3',
+  SLOTS: '@who_pays_slots_v4',
+  HISTORY: '@who_pays_history_v4',
+  CIRCLES: '@who_pays_circles_v4',
+  ACTIVE_CIRCLE: '@who_pays_active_circle_v4',
+  CIRCLE_ROSTERS: '@who_pays_circle_rosters_v4',
 };
 
-export const GROUP_ROSTER_PRESETS: Record<string, string[]> = {
-  '1': ['Gravit', 'Saanvi', 'Aman', 'Priya'],
-  '2': ['Alex', 'Sam', 'Jordan', 'Taylor'],
-  '3': ['Roomie 1', 'Roomie 2', 'Roomie 3', 'Roomie 4'],
-};
-
-export function createRosterForCircle(circleId: string): PlayerSlot[] {
-  const preset = GROUP_ROSTER_PRESETS[circleId];
+export function createRosterForCircle(_circleId?: string): PlayerSlot[] {
   return [0, 1, 2, 3].map((idx) => {
     const color = playerColors[idx % playerColors.length];
-    const defaultName = preset && preset[idx] ? preset[idx] : `Player ${String.fromCharCode(65 + idx)}`;
+    const defaultName = `Player ${String.fromCharCode(65 + idx)}`;
     return {
       id: `slot-${idx + 1}`,
       colorId: color.id,
@@ -110,9 +103,9 @@ export function createRosterForCircle(circleId: string): PlayerSlot[] {
 }
 
 const INITIAL_CIRCLES: CircleGroup[] = [
-  { id: '1', name: 'College Gang', members: 4, decisions: 3, emoji: '🎓' },
-  { id: '2', name: 'Office Friends', members: 4, decisions: 3, emoji: '💼' },
-  { id: '3', name: 'Flatmates', members: 4, decisions: 2, emoji: '🏠' },
+  { id: '1', name: 'College Gang', members: 4, decisions: 0, emoji: '🎓' },
+  { id: '2', name: 'Office Friends', members: 4, decisions: 0, emoji: '💼' },
+  { id: '3', name: 'Flatmates', members: 4, decisions: 0, emoji: '🏠' },
 ];
 
 const INITIAL_CIRCLE_ROSTERS: Record<string, PlayerSlot[]> = {
@@ -121,125 +114,13 @@ const INITIAL_CIRCLE_ROSTERS: Record<string, PlayerSlot[]> = {
   '3': createRosterForCircle('3'),
 };
 
-const INITIAL_BASELINE_HISTORY: MatchResult[] = [
-  // Circle 1: College Gang (id: '1')
-  {
-    id: 'college-1',
-    circleId: '1',
-    circleName: 'College Gang',
-    gameId: 'time_bomb',
-    stakesModeId: 'who_pays',
-    dilemma: 'Late Night Chai & Maggi ☕',
-    loserSlotId: 'slot-3',
-    loserName: 'Aman',
-    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
-    winnerNames: ['Gravit', 'Saanvi', 'Priya'],
-    createdAt: Date.now() - 3600000 * 2,
-  },
-  {
-    id: 'college-2',
-    circleId: '1',
-    circleName: 'College Gang',
-    gameId: 'roulette',
-    stakesModeId: 'who_pays',
-    dilemma: 'Who Pays for Biryani? 🍛',
-    loserSlotId: 'slot-2',
-    loserName: 'Saanvi',
-    winnerSlotIds: ['slot-1', 'slot-3', 'slot-4'],
-    winnerNames: ['Gravit', 'Aman', 'Priya'],
-    createdAt: Date.now() - 3600000 * 24,
-  },
-  {
-    id: 'college-3',
-    circleId: '1',
-    circleName: 'College Gang',
-    gameId: 'reaction_standoff',
-    stakesModeId: 'who_pays',
-    dilemma: 'Canteen Samosas 🥟',
-    loserSlotId: 'slot-3',
-    loserName: 'Aman',
-    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
-    winnerNames: ['Gravit', 'Saanvi', 'Priya'],
-    createdAt: Date.now() - 3600000 * 48,
-  },
-
-  // Circle 2: Office Friends (id: '2')
-  {
-    id: 'office-1',
-    circleId: '2',
-    circleName: 'Office Friends',
-    gameId: 'tap_frenzy',
-    stakesModeId: 'who_pays',
-    dilemma: 'Friday Coffee Run ☕',
-    loserSlotId: 'slot-1',
-    loserName: 'Alex',
-    winnerSlotIds: ['slot-2', 'slot-3', 'slot-4'],
-    winnerNames: ['Sam', 'Jordan', 'Taylor'],
-    createdAt: Date.now() - 3600000 * 4,
-  },
-  {
-    id: 'office-2',
-    circleId: '2',
-    circleName: 'Office Friends',
-    gameId: 'roulette',
-    stakesModeId: 'awkward_duty',
-    dilemma: 'Team Lunch Bill 🍕',
-    loserSlotId: 'slot-3',
-    loserName: 'Jordan',
-    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
-    winnerNames: ['Alex', 'Sam', 'Taylor'],
-    createdAt: Date.now() - 3600000 * 28,
-  },
-  {
-    id: 'office-3',
-    circleId: '2',
-    circleName: 'Office Friends',
-    gameId: 'time_bomb',
-    stakesModeId: 'who_pays',
-    dilemma: 'Morning Donut Duty 🍩',
-    loserSlotId: 'slot-1',
-    loserName: 'Alex',
-    winnerSlotIds: ['slot-2', 'slot-3', 'slot-4'],
-    winnerNames: ['Sam', 'Jordan', 'Taylor'],
-    createdAt: Date.now() - 3600000 * 52,
-  },
-
-  // Circle 3: Flatmates (id: '3')
-  {
-    id: 'flatmates-1',
-    circleId: '3',
-    circleName: 'Flatmates',
-    gameId: 'time_bomb',
-    stakesModeId: 'who_pays',
-    dilemma: 'Grocery & Milk Run 🥛',
-    loserSlotId: 'slot-2',
-    loserName: 'Roomie 2',
-    winnerSlotIds: ['slot-1', 'slot-3', 'slot-4'],
-    winnerNames: ['Roomie 1', 'Roomie 3', 'Roomie 4'],
-    createdAt: Date.now() - 3600000 * 6,
-  },
-  {
-    id: 'flatmates-2',
-    circleId: '3',
-    circleName: 'Flatmates',
-    gameId: 'roulette',
-    stakesModeId: 'who_pays',
-    dilemma: 'Who Pays Wi-Fi Bill? 📶',
-    loserSlotId: 'slot-3',
-    loserName: 'Roomie 3',
-    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
-    winnerNames: ['Roomie 1', 'Roomie 2', 'Roomie 4'],
-    createdAt: Date.now() - 3600000 * 30,
-  },
-];
-
 export const useSessionStore = create<SessionState>((set, get) => ({
   slots: INITIAL_CIRCLE_ROSTERS['1'],
   selectedMode: 'who_pays',
   selectedCategory: 'Where to Eat?',
   selectedGame: 'time_bomb',
-  lastResult: INITIAL_BASELINE_HISTORY[0],
-  history: INITIAL_BASELINE_HISTORY,
+  lastResult: null,
+  history: [],
   fairnessMode: true,
   activeCircle: INITIAL_CIRCLES[0],
   circles: INITIAL_CIRCLES,
@@ -416,22 +297,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   applyGroupToSlots: (circleId) => {
-    const preset = GROUP_ROSTER_PRESETS[circleId];
     set((state) => {
-      const updated = state.slots.map((s, idx) => {
-        const assigned = preset && preset[idx] ? preset[idx] : `Player ${String.fromCharCode(65 + idx)}`;
-        return {
-          ...s,
-          name: assigned,
-        };
-      });
+      // If this circle has a saved roster, restore it; otherwise create clean Player A, Player B... slots
+      const existingRoster = state.circleRosters[circleId];
+      if (existingRoster && existingRoster.length > 0) {
+        AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(existingRoster)).catch(() => {});
+        return { slots: existingRoster };
+      }
+      const freshRoster = createRosterForCircle(circleId);
       const updatedRosters = {
         ...state.circleRosters,
-        [state.activeCircle.id]: updated,
+        [circleId]: freshRoster,
       };
-      AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(updated)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(freshRoster)).catch(() => {});
       AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
-      return { slots: updated, circleRosters: updatedRosters };
+      return { slots: freshRoster, circleRosters: updatedRosters };
     });
   },
 

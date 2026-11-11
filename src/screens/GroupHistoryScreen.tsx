@@ -75,7 +75,7 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
 
     return activeSlots.map((player) => {
       const count = counts[player.id] || 0;
-      const pct = Math.max(8, Math.round((count / maxLoss) * 88));
+      const pct = count === 0 ? 0 : Math.max(8, Math.round((count / maxLoss) * 88));
       return {
         id: player.id,
         name: player.name,
@@ -86,10 +86,10 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
     });
   }, [activeSlots, circleHistory]);
 
-  // Find who currently has the most losses to give them the crown
+  // Find who currently has the most losses to give them the crown (only if at least 1 loss)
   const maxLossPlayerId = useMemo(() => {
-    let topId = activeSlots[0]?.id;
-    let topCount = -1;
+    let topId: string | null = null;
+    let topCount = 0;
     playerStats.forEach((p) => {
       if (p.count > topCount) {
         topCount = p.count;
@@ -97,7 +97,7 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
       }
     });
     return topId;
-  }, [activeSlots, playerStats]);
+  }, [playerStats]);
 
   // Format real-time recent decisions
   const recentDecisions = useMemo(() => {
@@ -209,12 +209,12 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
                 size={52}
                 borderColor={player.colorHex}
                 borderWidth={2.5}
-                showCrown={player.id === maxLossPlayerId}
+                showCrown={Boolean(maxLossPlayerId && player.id === maxLossPlayerId)}
               />
               <ThemedText variant="caption" style={styles.avatarName} numberOfLines={1}>
                 {player.name}
               </ThemedText>
-              {player.id === maxLossPlayerId && (
+              {Boolean(maxLossPlayerId && player.id === maxLossPlayerId) && (
                 <View style={styles.miniCrown}>
                   <CrownDoodle size={16} color="#FFEA00" />
                 </View>
@@ -230,35 +230,47 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
               LOSS DISTRIBUTION 📊
             </ThemedText>
             <ThemedText variant="caption" style={styles.totalMatchesCaption}>
-              {circleHistory.length} games recorded
+              {circleHistory.length} {circleHistory.length === 1 ? 'game' : 'games'} recorded
             </ThemedText>
           </View>
 
-          {playerStats.map((player) => (
-            <View key={player.id} style={styles.barRow}>
-              <ThemedText variant="body" style={styles.playerName} numberOfLines={1}>
-                {player.name}
+          {circleHistory.length === 0 ? (
+            <View style={styles.emptyStateBox}>
+              <ThemedText style={styles.emptyStateIcon}>🌱</ThemedText>
+              <ThemedText variant="body" style={styles.emptyStateTitle}>
+                0 Games Recorded Yet
               </ThemedText>
-              <View style={styles.barTrack}>
-                <View
-                  style={[
-                    styles.barFill,
-                    {
-                      width: player.barWidth,
-                      backgroundColor: player.color,
-                      shadowColor: player.color,
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 0.7,
-                      shadowRadius: 8,
-                    },
-                  ]}
-                />
-              </View>
-              <ThemedText variant="caption" style={styles.countLabel}>
-                {player.count} {player.count === 1 ? 'time' : 'times'}
+              <ThemedText variant="caption" style={styles.emptyStateSubtitle}>
+                Play a match to start tracking who pays the bills in {activeCircle.name}!
               </ThemedText>
             </View>
-          ))}
+          ) : (
+            playerStats.map((player) => (
+              <View key={player.id} style={styles.barRow}>
+                <ThemedText variant="body" style={styles.playerName} numberOfLines={1}>
+                  {player.name}
+                </ThemedText>
+                <View style={styles.barTrack}>
+                  <View
+                    style={[
+                      styles.barFill,
+                      {
+                        width: player.barWidth,
+                        backgroundColor: player.color,
+                        shadowColor: player.color,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.7,
+                        shadowRadius: 8,
+                      },
+                    ]}
+                  />
+                </View>
+                <ThemedText variant="caption" style={styles.countLabel}>
+                  {player.count} {player.count === 1 ? 'time' : 'times'}
+                </ThemedText>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Dynamic Recent Decisions Section */}
@@ -567,6 +579,27 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     paddingVertical: spacing.lg,
+  },
+  emptyStateBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
+  emptyStateIcon: {
+    fontSize: 28,
+    marginBottom: spacing.xs,
+  },
+  emptyStateTitle: {
+    color: colors.textPrimary,
+    fontWeight: '700',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  emptyStateSubtitle: {
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontSize: 12,
   },
   bottomNavSection: {
     marginTop: spacing.xs,
