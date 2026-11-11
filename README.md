@@ -1,6 +1,7 @@
 # 🎲 Who Pays?
 
 ### Don't argue over who pays. Let the game decide.
+**Install App :[Link](https://expo.dev/accounts/sin_v/projects/who-pays/builds/88df8c0c-6f74-4df8-9c1f-d497faa170ba)**
 
 **Who Pays?** is a local multiplayer party game that turns everyday group dilemmas into competitive mini-games. From deciding who pays the restaurant bill to choosing who takes out the trash or controls the aux, it makes awkward decisions entertaining.
 
@@ -80,7 +81,7 @@ The Karma Ledger also tracks player tendencies and assigns fun personality arche
 
 The easiest way to experience the app is to install the Android build directly.
 
-<**[Download Who Pays? for Android](https://expo.dev/accounts/sin_v/projects/who-pays/builds/0fb355c0-569c-4a86-a4fb-d44b0ff55e89)**>
+<**[Download Who Pays? for Android](https://expo.dev/accounts/sin_v/projects/who-pays/builds/88df8c0c-6f74-4df8-9c1f-d497faa170ba)**>
 
 1. Open the download link on your Android device.
 2. Download the APK.
