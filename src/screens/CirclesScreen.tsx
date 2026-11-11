@@ -142,6 +142,15 @@ export const CirclesScreen: React.FC<RootStackScreenProps<'Circles'>> = ({ navig
             Decide. Play. Repeat. 👑
           </ThemedText>
           <PrimaryButton
+            label="Edit Group Players 👥"
+            variant="secondary"
+            onPress={() => {
+              triggerHaptic('selection');
+              navigation.navigate('PlayerSetup');
+            }}
+            style={{ marginBottom: spacing.sm }}
+          />
+          <PrimaryButton
             label="Start Playing (Stakes) ⚡"
             variant="primary"
             onPress={() => {

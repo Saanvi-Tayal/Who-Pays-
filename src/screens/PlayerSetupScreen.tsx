@@ -5,6 +5,7 @@ import {
   ScrollView,
   TextInput,
   Modal,
+  Pressable,
 } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
@@ -34,10 +35,35 @@ export const PlayerSetupScreen: React.FC<RootStackScreenProps<'PlayerSetup'>> = 
     activeCircle,
     setActiveCircle,
     applyGroupToSlots,
+    addCircle,
+    addPlayerToActiveCircle,
+    removePlayerFromActiveCircle,
   } = useSessionStore();
 
   // Avatar picker modal state
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
+
+  // Add group modal state
+  const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState('🎉');
+
+  const EMOJI_OPTIONS = ['🎉', '🍕', '🍻', '🎮', '🏖️', '🚀', '⚡', '👑', '🎓', '💼', '🏠', '🔥'];
+
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim()) return;
+    triggerHaptic('medium');
+    const newCircle = {
+      id: `circle-${Date.now()}`,
+      name: newGroupName.trim(),
+      members: 4,
+      decisions: 0,
+      emoji: selectedEmoji,
+    };
+    addCircle(newCircle);
+    setNewGroupName('');
+    setIsAddGroupModalOpen(false);
+  };
 
   // Active players count
   const activeCount = slots.filter((s) => s.isActive).length;
@@ -152,6 +178,20 @@ export const PlayerSetupScreen: React.FC<RootStackScreenProps<'PlayerSetup'>> = 
                 </AnimatedPressable>
               );
             })}
+
+            {/* + Add Group Chip */}
+            <AnimatedPressable
+              onPress={() => {
+                triggerHaptic('light');
+                setIsAddGroupModalOpen(true);
+              }}
+              style={styles.addGroupChip}
+              accessibilityRole="button"
+              accessibilityLabel="Add New Group"
+            >
+              <ThemedText style={styles.addGroupChipPlus}>+</ThemedText>
+              <ThemedText style={styles.addGroupChipText}>Add Group</ThemedText>
+            </AnimatedPressable>
           </ScrollView>
         </View>
 
@@ -210,29 +250,75 @@ export const PlayerSetupScreen: React.FC<RootStackScreenProps<'PlayerSetup'>> = 
                 />
               </View>
 
-              {/* Include/Exclude Toggle */}
-              <AnimatedPressable
-                onPress={() => {
-                  triggerHaptic('selection');
-                  toggleSlotActive(slot.id);
-                }}
-                style={[
-                  styles.toggleButton,
-                  isSlotActive ? styles.toggleActive : styles.toggleInactive,
-                ]}
-              >
-                <ThemedText
+              {/* Card Actions (IN/OUT & Remove) */}
+              <View style={styles.cardActionsCol}>
+                <AnimatedPressable
+                  onPress={() => {
+                    triggerHaptic('selection');
+                    toggleSlotActive(slot.id);
+                  }}
                   style={[
-                    styles.toggleText,
-                    isSlotActive ? styles.toggleTextActive : styles.toggleTextInactive,
+                    styles.toggleButton,
+                    isSlotActive ? styles.toggleActive : styles.toggleInactive,
                   ]}
                 >
-                  {isSlotActive ? 'IN' : 'OUT'}
-                </ThemedText>
-              </AnimatedPressable>
+                  <ThemedText
+                    style={[
+                      styles.toggleText,
+                      isSlotActive ? styles.toggleTextActive : styles.toggleTextInactive,
+                    ]}
+                  >
+                    {isSlotActive ? 'IN' : 'OUT'}
+                  </ThemedText>
+                </AnimatedPressable>
+
+                <AnimatedPressable
+                  onPress={() => {
+                    if (slots.length <= 2) {
+                      triggerHaptic('warning');
+                      return;
+                    }
+                    triggerHaptic('medium');
+                    removePlayerFromActiveCircle(slot.id);
+                  }}
+                  style={[
+                    styles.removePlayerBtn,
+                    slots.length <= 2 && styles.removePlayerBtnDisabled,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${slot.name}`}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <ThemedText style={styles.removePlayerIcon}>✕</ThemedText>
+                </AnimatedPressable>
+              </View>
             </View>
           );
         })}
+
+        {/* + Add Player Button */}
+        {slots.length < 8 ? (
+          <AnimatedPressable
+            onPress={() => {
+              triggerHaptic('success');
+              addPlayerToActiveCircle();
+            }}
+            style={styles.addPlayerButton}
+            accessibilityRole="button"
+            accessibilityLabel="Add Person to Group"
+          >
+            <ThemedText style={styles.addPlayerPlus}>+</ThemedText>
+            <ThemedText style={styles.addPlayerText}>
+              Add Person to {activeCircle.name} ({slots.length}/8)
+            </ThemedText>
+          </AnimatedPressable>
+        ) : (
+          <View style={styles.maxPlayersNote}>
+            <ThemedText variant="caption" style={styles.maxPlayersText}>
+              Maximum 8 players reached for this party
+            </ThemedText>
+          </View>
+        )}
 
         {/* Validation Warning when < 2 players */}
         {!canProceed && (
@@ -325,6 +411,70 @@ export const PlayerSetupScreen: React.FC<RootStackScreenProps<'PlayerSetup'>> = 
                 </AnimatedPressable>
               ))}
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Create New Group Modal */}
+      <Modal
+        visible={isAddGroupModalOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsAddGroupModalOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.createGroupCard}>
+            <View style={styles.modalHeaderRow}>
+              <ThemedText variant="heading2" style={styles.modalTitle}>
+                Create New Group 👥
+              </ThemedText>
+              <Pressable
+                onPress={() => setIsAddGroupModalOpen(false)}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <ThemedText style={styles.modalCloseText}>✕</ThemedText>
+              </Pressable>
+            </View>
+
+            <ThemedText variant="caption" style={styles.modalInputLabel}>
+              GROUP NAME
+            </ThemedText>
+            <TextInput
+              style={styles.modalTextInput}
+              value={newGroupName}
+              onChangeText={setNewGroupName}
+              placeholder="e.g. Trip to Goa, Friday Poker..."
+              placeholderTextColor={colors.textMuted}
+              maxLength={24}
+            />
+
+            <ThemedText variant="caption" style={styles.modalInputLabel}>
+              CHOOSE AN EMOJI
+            </ThemedText>
+            <View style={styles.emojiPickerRow}>
+              {EMOJI_OPTIONS.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  onPress={() => {
+                    triggerHaptic('selection');
+                    setSelectedEmoji(emoji);
+                  }}
+                  style={[
+                    styles.emojiOption,
+                    selectedEmoji === emoji && styles.emojiOptionSelected,
+                  ]}
+                >
+                  <ThemedText style={styles.emojiText}>{emoji}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
+
+            <PrimaryButton
+              label="Create & Select Group ✨"
+              variant="primary"
+              onPress={handleCreateGroup}
+              style={{ marginTop: spacing.md }}
+            />
           </View>
         </View>
       </Modal>
@@ -441,6 +591,28 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '900',
   },
+  addGroupChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 64, 129, 0.12)',
+    borderRadius: borderRadius.full,
+    borderWidth: 1.5,
+    borderColor: '#FF4081',
+    borderStyle: 'dashed',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 7,
+    gap: 6,
+  },
+  addGroupChipPlus: {
+    color: '#FF4081',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  addGroupChipText: {
+    color: '#FF4081',
+    fontSize: 13,
+    fontWeight: '800',
+  },
   playersSectionTitle: {
     color: colors.textMuted,
     fontSize: 11,
@@ -530,6 +702,118 @@ const styles = StyleSheet.create({
   },
   toggleTextInactive: {
     color: '#FF4081',
+  },
+  cardActionsCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  removePlayerBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 64, 129, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 64, 129, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removePlayerBtnDisabled: {
+    opacity: 0.25,
+  },
+  removePlayerIcon: {
+    color: '#FF4081',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  addPlayerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 245, 160, 0.08)',
+    borderRadius: borderRadius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.accentMint,
+    borderStyle: 'dashed',
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
+    marginVertical: spacing.xs,
+  },
+  addPlayerPlus: {
+    color: colors.accentMint,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  addPlayerText: {
+    color: colors.accentMint,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  maxPlayersNote: {
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  maxPlayersText: {
+    color: colors.textMuted,
+    fontStyle: 'italic',
+    fontSize: 12,
+  },
+  createGroupCard: {
+    backgroundColor: '#190C2E',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  modalInputLabel: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  modalTextInput: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '700',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  emojiPickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  emojiOption: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  emojiOptionSelected: {
+    borderColor: '#FF4081',
+    backgroundColor: 'rgba(255, 64, 129, 0.2)',
+  },
+  emojiText: {
+    fontSize: 22,
   },
   warningBox: {
     backgroundColor: 'rgba(255, 64, 129, 0.15)',

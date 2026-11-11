@@ -138,15 +138,15 @@ export const StakesScreen: React.FC<RootStackScreenProps<'Stakes'>> = ({ navigat
             <AnimatedPressable
               onPress={() => {
                 triggerHaptic('light');
-                navigation.goBack();
+                navigation.navigate('DropIn');
               }}
               style={styles.navBackButton}
               accessibilityRole="button"
-              accessibilityLabel="Back to Player Setup"
+              accessibilityLabel="Back to Touch Screen"
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <ThemedText style={styles.navBackIcon}>‹</ThemedText>
-              <ThemedText style={styles.navBackLabel}>Players</ThemedText>
+              <ThemedText style={styles.navBackLabel}>Touch In 👆</ThemedText>
             </AnimatedPressable>
 
             <View style={styles.titleRow}>
@@ -156,7 +156,18 @@ export const StakesScreen: React.FC<RootStackScreenProps<'Stakes'>> = ({ navigat
               <CrownDoodle size={30} color="#FFB800" />
             </View>
 
-            <View style={styles.navSpacer} />
+            <AnimatedPressable
+              onPress={() => {
+                triggerHaptic('light');
+                navigation.navigate('PlayerSetup');
+              }}
+              style={styles.navRightButton}
+              accessibilityRole="button"
+              accessibilityLabel="Player Setup"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <ThemedText style={styles.navRightLabel}>Players 👥</ThemedText>
+            </AnimatedPressable>
           </View>
 
           <View style={styles.subtitleRow}>
@@ -387,6 +398,22 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   navBackLabel: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  navRightButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 6,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    gap: 4,
+  },
+  navRightLabel: {
     color: '#FFF',
     fontSize: 12,
     fontWeight: '800',

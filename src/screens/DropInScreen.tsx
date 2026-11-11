@@ -5,6 +5,10 @@ import {
   GestureResponderEvent,
   Platform,
   useWindowDimensions,
+  ScrollView,
+  Pressable,
+  Modal,
+  TextInput,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -16,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { AnimatedPressable } from '@/components/buttons/AnimatedPressable';
 import { CrownDoodle, CentralStarburst, PointingHandSvg } from '@/components/illustrations/DoodlesSvg';
 import { useSessionStore, PlayerSlot } from '@/features/session/sessionStore';
@@ -46,8 +51,38 @@ const DEFAULT_ALPHABET_NAMES = [
 ];
 
 export const DropInScreen: React.FC<RootStackScreenProps<'DropIn'>> = ({ navigation }) => {
-  const { setRegisteredSlots } = useSessionStore();
+  const {
+    setRegisteredSlots,
+    circles,
+    activeCircle,
+    setActiveCircle,
+    applyGroupToSlots,
+    addCircle,
+    slots,
+  } = useSessionStore();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  // Add group modal state
+  const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState('🎉');
+
+  const EMOJI_OPTIONS = ['🎉', '🍕', '🍻', '🎮', '🏖️', '🚀', '⚡', '👑', '🎓', '💼', '🏠', '🔥'];
+
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim()) return;
+    triggerHaptic('medium');
+    const newCircle = {
+      id: `circle-${Date.now()}`,
+      name: newGroupName.trim(),
+      members: 4,
+      decisions: 0,
+      emoji: selectedEmoji,
+    };
+    addCircle(newCircle);
+    setNewGroupName('');
+    setIsAddGroupModalOpen(false);
+  };
 
   // Active touch points for UI rendering
   const [activeTouches, setActiveTouches] = useState<TouchBlob[]>([]);
@@ -110,8 +145,9 @@ export const DropInScreen: React.FC<RootStackScreenProps<'DropIn'>> = ({ navigat
 
       const registered: PlayerSlot[] = validTouches.map((t, idx) => {
         const colorPalette = playerColors[idx % playerColors.length];
-        const assignedName = DEFAULT_ALPHABET_NAMES[idx] || `Player ${String.fromCharCode(65 + idx)}`;
-        const avatarKey = `AV-0${(idx % 12) + 1}`;
+        const existingName = slots[idx]?.name;
+        const assignedName = existingName || DEFAULT_ALPHABET_NAMES[idx] || `Player ${String.fromCharCode(65 + idx)}`;
+        const avatarKey = slots[idx]?.avatarKey || `AV-0${(idx % 12) + 1}`;
 
         return {
           id: `slot-${idx + 1}`,
@@ -130,7 +166,7 @@ export const DropInScreen: React.FC<RootStackScreenProps<'DropIn'>> = ({ navigat
         navigation.navigate('PlayerSetup');
       }, 350);
     },
-    [lockScaleAnim, navigation, setRegisteredSlots]
+    [lockScaleAnim, navigation, setRegisteredSlots, slots]
   );
 
   // Stop hold timer
@@ -318,6 +354,56 @@ export const DropInScreen: React.FC<RootStackScreenProps<'DropIn'>> = ({ navigat
         </AnimatedPressable>
       </View>
 
+      {/* Group Selector Strip on Touch Screen */}
+      <View style={styles.groupPickerBar}>
+        <ThemedText variant="caption" style={styles.groupPickerLabel}>
+          GROUP:
+        </ThemedText>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dropInGroupScroll}
+        >
+          {circles.map((c) => {
+            const isSelected = c.id === activeCircle.id;
+            return (
+              <Pressable
+                key={c.id}
+                onPress={() => {
+                  triggerHaptic('selection');
+                  setActiveCircle(c);
+                  applyGroupToSlots(c.id);
+                }}
+                style={[
+                  styles.dropInGroupChip,
+                  isSelected && styles.dropInGroupChipActive,
+                ]}
+              >
+                <ThemedText style={styles.dropInGroupEmoji}>{c.emoji}</ThemedText>
+                <ThemedText
+                  style={[
+                    styles.dropInGroupText,
+                    isSelected && styles.dropInGroupTextActive,
+                  ]}
+                >
+                  {c.name}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+          <Pressable
+            onPress={() => {
+              triggerHaptic('light');
+              setIsAddGroupModalOpen(true);
+            }}
+            style={styles.dropInAddGroupChip}
+          >
+            <ThemedText style={styles.dropInAddGroupPlus}>+</ThemedText>
+            <ThemedText style={styles.dropInAddGroupText}>Add Group</ThemedText>
+          </Pressable>
+        </ScrollView>
+      </View>
+
       {/* Full-bleed Multi-Touch Canvas */}
       <View
         style={styles.touchCanvas}
@@ -444,6 +530,70 @@ export const DropInScreen: React.FC<RootStackScreenProps<'DropIn'>> = ({ navigat
           </ThemedText>
         </View>
       </View>
+
+      {/* Create New Group Modal */}
+      <Modal
+        visible={isAddGroupModalOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setIsAddGroupModalOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.createGroupCard}>
+            <View style={styles.modalHeaderRow}>
+              <ThemedText variant="heading2" style={styles.modalTitle}>
+                Create New Group 👥
+              </ThemedText>
+              <Pressable
+                onPress={() => setIsAddGroupModalOpen(false)}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <ThemedText style={styles.modalCloseText}>✕</ThemedText>
+              </Pressable>
+            </View>
+
+            <ThemedText variant="caption" style={styles.modalInputLabel}>
+              GROUP NAME
+            </ThemedText>
+            <TextInput
+              style={styles.modalTextInput}
+              value={newGroupName}
+              onChangeText={setNewGroupName}
+              placeholder="e.g. Trip to Goa, Friday Poker..."
+              placeholderTextColor={colors.textMuted}
+              maxLength={24}
+            />
+
+            <ThemedText variant="caption" style={styles.modalInputLabel}>
+              CHOOSE AN EMOJI
+            </ThemedText>
+            <View style={styles.emojiPickerRow}>
+              {EMOJI_OPTIONS.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  onPress={() => {
+                    triggerHaptic('selection');
+                    setSelectedEmoji(emoji);
+                  }}
+                  style={[
+                    styles.emojiOption,
+                    selectedEmoji === emoji && styles.emojiOptionSelected,
+                  ]}
+                >
+                  <ThemedText style={styles.emojiText}>{emoji}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
+
+            <PrimaryButton
+              label="Create & Select Group ✨"
+              variant="primary"
+              onPress={handleCreateGroup}
+              style={{ marginTop: spacing.md }}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 };
@@ -484,6 +634,147 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 12,
     fontWeight: '800',
+  },
+  groupPickerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
+    zIndex: 25,
+    gap: spacing.xs,
+  },
+  groupPickerLabel: {
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  dropInGroupScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingRight: spacing.md,
+  },
+  dropInGroupChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    gap: 4,
+  },
+  dropInGroupChipActive: {
+    borderColor: colors.accentMint,
+    backgroundColor: 'rgba(0, 245, 160, 0.15)',
+  },
+  dropInGroupEmoji: {
+    fontSize: 12,
+  },
+  dropInGroupText: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  dropInGroupTextActive: {
+    color: '#FFF',
+    fontWeight: '900',
+  },
+  dropInAddGroupChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 64, 129, 0.12)',
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#FF4081',
+    borderStyle: 'dashed',
+    gap: 4,
+  },
+  dropInAddGroupPlus: {
+    color: '#FF4081',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  dropInAddGroupText: {
+    color: '#FF4081',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'flex-end',
+  },
+  createGroupCard: {
+    backgroundColor: '#190C2E',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    color: '#FFF',
+    fontWeight: '900',
+    fontSize: 18,
+  },
+  modalCloseText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  modalInputLabel: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  modalTextInput: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '700',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  emojiPickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  emojiOption: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  emojiOptionSelected: {
+    borderColor: '#FF4081',
+    backgroundColor: 'rgba(255, 64, 129, 0.2)',
+  },
+  emojiText: {
+    fontSize: 22,
   },
   touchCanvas: {
     flex: 1,

@@ -64,6 +64,8 @@ interface SessionState {
   toggleSlotActive: (slotId: string) => void;
   updateSlotName: (slotId: string, name: string) => void;
   updateSlotAvatar: (slotId: string, avatarKey: string) => void;
+  addPlayerToActiveCircle: (name?: string) => boolean;
+  removePlayerFromActiveCircle: (slotId: string) => boolean;
   setStakesMode: (mode: StakesModeId) => void;
   setSelectedCategory: (category: string) => void;
   selectGame: (game: GameId) => void;
@@ -181,6 +183,83 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
       return { slots: updated, circleRosters: updatedRosters };
     });
+  },
+
+  addPlayerToActiveCircle: (name?: string) => {
+    const { slots, activeCircle, circleRosters, circles } = get();
+    if (slots.length >= 8) return false;
+
+    const nextIdx = slots.length;
+    const color = playerColors[nextIdx % playerColors.length];
+    const defaultName = name?.trim() || `Player ${String.fromCharCode(65 + nextIdx)}`;
+    const avatarKey = `AV-0${(nextIdx % 12) + 1}`;
+
+    const newSlot: PlayerSlot = {
+      id: `slot-${Date.now()}-${nextIdx}`,
+      colorId: color.id,
+      colorHex: color.main,
+      contrastText: color.contrastText,
+      name: defaultName,
+      avatarKey,
+      isActive: true,
+    };
+
+    const updatedSlots = [...slots, newSlot];
+    const updatedRosters = {
+      ...circleRosters,
+      [activeCircle.id]: updatedSlots,
+    };
+    const updatedCircle: CircleGroup = {
+      ...activeCircle,
+      members: updatedSlots.length,
+    };
+    const updatedCircles = circles.map((c) =>
+      c.id === activeCircle.id ? updatedCircle : c
+    );
+
+    set({
+      slots: updatedSlots,
+      circleRosters: updatedRosters,
+      activeCircle: updatedCircle,
+      circles: updatedCircles,
+    });
+
+    AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(updatedSlots)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedCircle)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+    return true;
+  },
+
+  removePlayerFromActiveCircle: (slotId: string) => {
+    const { slots, activeCircle, circleRosters, circles } = get();
+    if (slots.length <= 2) return false;
+
+    const updatedSlots = slots.filter((s) => s.id !== slotId);
+    const updatedRosters = {
+      ...circleRosters,
+      [activeCircle.id]: updatedSlots,
+    };
+    const updatedCircle: CircleGroup = {
+      ...activeCircle,
+      members: updatedSlots.length,
+    };
+    const updatedCircles = circles.map((c) =>
+      c.id === activeCircle.id ? updatedCircle : c
+    );
+
+    set({
+      slots: updatedSlots,
+      circleRosters: updatedRosters,
+      activeCircle: updatedCircle,
+      circles: updatedCircles,
+    });
+
+    AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(updatedSlots)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedCircle)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+    return true;
   },
 
   setStakesMode: (selectedMode) => set({ selectedMode }),
