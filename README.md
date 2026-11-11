@@ -6,9 +6,9 @@
 
 ## 📖 About the Project
 
-**Who Pays?** is a fast-paced, local multiplayer party dispute resolution application built for groups of friends, colleagues, and roommates who are tired of awkward conversations about who picks up the check, takes out the trash, or gets aux cord privileges. Instead of pulling out a calculator or engaging in tedious polite debates, players place their fingers directly onto a single shared smartphone screen to immediately lock in their players, select their stakes, and settle the score through adrenaline-fueled party minigames.
+**Who Pays?** is a fast-paced, local multiplayer dispute resolution party app built for friends, colleagues, and roommates who are tired of awkward conversations about who picks up the food bill, takes out the trash, or gets aux cord privileges. Instead of pulling out a calculator or engaging in tedious polite debates, players place their fingers directly onto a single shared smartphone screen to lock in their players, pick their stakes, and settle the score through adrenaline-fueled party minigames.
 
-The app tracks every outcome across distinct social circles—such as your **College Gang**, **Office Friends**, or **Flatmates**. Every decision feeds into a persistent **Karma Ledger**, dynamically awarding personality archetypes like **"The ATM"** (the perpetual loser) or **"The Lucky One"** (the friend who miraculously never pays). Players can toggle a mathematically weighted **Fairness Algorithm** that gently nudges probability against lucky players, or choose **Pure Chaos** for completely raw, unadulterated chance. Designed with an energetic retro-party aesthetic, rich micro-interactions, responsive haptic feedback, and fluid 60 FPS physics animations, *Who Pays?* transforms trivial everyday disputes into unforgettable social memories.
+The app tracks every outcome across distinct social circles—such as your **College Gang 🎓**, **Office Friends 💼**, or **Flatmates 🏠**—so work lunches and roommate groceries never mix. Every decision feeds into a persistent **Karma Ledger**, dynamically awarding personality archetypes like **"The ATM"** (the perpetual loser) or **"The Lucky One"** (the friend who miraculously never pays). Players can toggle a mathematically weighted **Fairness Algorithm** that gently nudges probability against lucky players, or choose **Pure Chaos** for completely raw, unadulterated chance. Designed with an energetic retro-party aesthetic, rich micro-interactions, responsive haptic feedback, and fluid 60 FPS physics animations, *Who Pays?* transforms trivial everyday disputes into unforgettable social memories.
 
 ---
 
@@ -47,73 +47,70 @@ The app tracks every outcome across distinct social circles—such as your **Col
 
 ---
 
-## 🚀 How Users Can Play
+## 📱 How to Experience & Play the App
 
-### 1. Multi-Touch Drop-In
-2 to 8 players place and hold a finger on the phone's glass. Floating colored halos and countdown rings lock in active slots.
-
-### 2. Group & Name Selection
-Select which circle is playing (College, Office, Flatmates) or enter custom player names. By default, players are auto-assigned as `Player A`, `Player B`, etc., so setup takes under 3 seconds.
-
-### 3. Choose the Stakes
-Pick your dilemma category and consequence mode:
-- 💳 **Who Pays?** (Food, drinks, coffee, takeout)
-- 🍕 **Awkward Duty** (Taking out trash, talking to landlord, washing dishes)
-- ⚖️ **The Ledger Vengeance** (Settling historic debts)
-- 🎵 **Aux Cord Dictator** (Losing music control for the car ride)
-- 📵 **Screen Time Penalty** (Phone face-down for 1 hour)
-
-### 4. Play the Arena & Reveal Verdict
-The game resolves the outcome with confetti, winner tags, and an animated loser card. Tap **Stakes ⚡** to jump straight to another round, or **Check Karma ✨** to view updated standings.
+### 1. 🤖 Download the Android APK (Direct Install)
+You can download and install the standalone Android `.apk` directly onto any Android smartphone without needing Expo Go or developer tools:
+1. Download the latest **`Who-Pays.apk`** from the [GitHub Releases](https://github.com/Saanvi-Tayal/Who-Pays-/releases) page or your EAS build download link.
+2. Tap the downloaded file on your Android device.
+3. If Android prompts *"File might be harmful"* or *"Install unknown apps"*, tap **Settings** ➔ toggle **Allow from this source** ➔ tap **Install**.
+4. Launch **Who Pays?** from your app drawer and start playing!
 
 ---
 
-## 📲 How to Share the App
-
-### Option A: Direct Android APK (No Expo Go Required)
-1. Install EAS CLI and login to your Expo account:
-   ```bash
-   npm install -g eas-cli
-   eas login
-   ```
-2. Run the APK build command:
-   ```bash
-   eas build -p android --profile preview
-   ```
-3. When the build completes in 5–7 minutes, EAS provides a **direct download URL and QR code**. Open the link on any Android device, tap **Download**, and install the APK! *(Enable "Install Unknown Apps" in Android Settings if prompted)*.
-
-### Option B: Instant Web Version (Works on ANY Device Browser)
-You can deploy the pre-built web version (`dist/`) to any static host for free:
-- **Netlify Drop:** Drag and drop the `dist/` folder into [app.netlify.com/drop](https://app.netlify.com/drop).
-- **Vercel:** Run `npx vercel --prod dist`.
-- **Surge:** Run `npx surge dist`.
-Anyone can open the URL in Chrome, Safari, or Brave on iOS, Android, or PC and play immediately with full touch support.
-
-### Option C: Share via Expo Go
-To let friends test on their phones via Expo Go across different Wi-Fi networks or mobile data:
-```bash
-npx expo start --tunnel
-```
-Send your friend the generated QR code or exp:// URL to launch in the free Expo Go app.
+### 2. 🌐 Play in Your Web Browser (Instant Demo)
+No installation required! The web build runs on **any device** (iOS Safari, Android Chrome, Mac, Windows):
+- Supports full touch controls, animations, multiplayer setup, and minigames.
+- Open the live web deployment or run the pre-built `dist/` bundle on any browser.
 
 ---
 
-## 💻 Local Development
+### 3. ⚡ Test Live via Expo Go
+If you have the **Expo Go** app installed on your physical device (available free on [Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent) and [Apple App Store](https://apps.apple.com/app/expo-go/id982107779)):
+1. Run the cloud tunnel on the host:
+   ```bash
+   npx expo start --tunnel
+   ```
+2. Scan the terminal QR code using your phone's camera (iOS) or the Expo Go app (Android).
+3. The project loads live across any Wi-Fi or cellular network regardless of geographic location.
+
+---
+
+### 4. 💻 Run from Source (For Evaluators & Developers)
 
 ```bash
-# 1. Install dependencies
+# 1. Clone the repository
+git clone https://github.com/Saanvi-Tayal/Who-Pays-.git
+cd Who-Pays-
+
+# 2. Install dependencies
 npm install
 
-# 2. Run TypeScript check & Linter
+# 3. Verify types and code quality
 npm run typecheck
 npm run lint
 
-# 3. Run game engine unit tests
+# 4. Run automated unit tests
 node --test src/features/games/*/__tests__/*.test.ts
 
-# 4. Start Expo local dev server
+# 5. Start the Metro development server
 npm start
 ```
+*In the terminal menu, press `a` to open in an Android emulator/device, `w` to open in a web browser, or scan the QR code in Expo Go.*
+
+---
+
+## 🎯 Gameplay Walkthrough (How It Works)
+
+1. **Multi-Touch Drop-In:** 2 to 8 players place and hold a finger on the phone's glass. Floating colored halos and countdown rings lock in active slots.
+2. **Group & Name Selection:** Select which circle is playing (College Gang, Office Friends, Flatmates) or enter custom player names. By default, players are auto-assigned as `Player A`, `Player B`... so games start in under 3 seconds.
+3. **Choose the Stakes:** Pick your dilemma category and consequence mode:
+   - 💳 **Who Pays?** (Food, drinks, coffee, takeout)
+   - 🍕 **Awkward Duty** (Taking out trash, talking to landlord, washing dishes)
+   - ⚖️ **The Ledger Vengeance** (Settling historic debts)
+   - 🎵 **Aux Cord Dictator** (Losing music control for the car ride)
+   - 📵 **Screen Time Penalty** (Phone face-down for 1 hour)
+4. **Play the Arena & Reveal Verdict:** The game resolves the outcome with winner tags, floating crowns, and an animated loser card. Tap **Stakes ⚡** to jump straight to another round, or **Check Karma ✨** to view updated standings.
 
 ---
 
