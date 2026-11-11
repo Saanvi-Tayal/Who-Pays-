@@ -1,128 +1,147 @@
-# 👑 Who Pays? — Party Dispute Resolution Game
+# 🎲 Who Pays?
 
-> **Turn awkward bill splits, chores, and everyday dilemmas into frantic, high-stakes physical party games.**
+### Don't argue over who pays. Let the game decide.
 
----
+**Who Pays?** is a local multiplayer party game that turns everyday group dilemmas into competitive mini-games. From deciding who pays the restaurant bill to choosing who takes out the trash or controls the aux, it makes awkward decisions entertaining.
 
-## 📖 About the Project
-
-**Who Pays?** is a fast-paced, local multiplayer dispute resolution party app built for friends, colleagues, and roommates who are tired of awkward conversations about who picks up the food bill, takes out the trash, or gets aux cord privileges. Instead of pulling out a calculator or engaging in tedious polite debates, players place their fingers directly onto a single shared smartphone screen to lock in their players, pick their stakes, and settle the score through adrenaline-fueled party minigames.
-
-The app tracks every outcome across distinct social circles—such as your **College Gang 🎓**, **Office Friends 💼**, or **Flatmates 🏠**—so work lunches and roommate groceries never mix. Every decision feeds into a persistent **Karma Ledger**, dynamically awarding personality archetypes like **"The ATM"** (the perpetual loser) or **"The Lucky One"** (the friend who miraculously never pays). Players can toggle a mathematically weighted **Fairness Algorithm** that gently nudges probability against lucky players, or choose **Pure Chaos** for completely raw, unadulterated chance. Designed with an energetic retro-party aesthetic, rich micro-interactions, responsive haptic feedback, and fluid 60 FPS physics animations, *Who Pays?* transforms trivial everyday disputes into unforgettable social memories.
+Built for friends, college groups, office colleagues, and flatmates, the app brings everyone together around a single smartphone. No accounts, no invitations, no complicated setup. Just touch, play, and find out who's paying.
 
 ---
 
-## 🎮 Game Modes (Arenas)
+## ✨ Features
 
-| Game Mode | Mechanics | Adrenaline Factor |
-| :--- | :--- | :--- |
-| **💣 Time Bomb** | A secret, randomized fuse scales with player count. Pass the phone frantically to the next player—whoever holds it when it detonates loses! | 🔥 High Suspense |
-| **🎡 Russian Roulette** | A vibrant spinning wheel with decelerating cubic-bezier physics and real-time needle deflection that points directly at the unlucky payer. | 🎲 Pure Chance |
-| **⚡ Tap Frenzy** | 5 seconds of furious tapping in your quadrant of the screen. The player with the fewest taps at zero pays the bill! | ⚡ High Octane |
-| **🎯 Reaction Standoff** | All players press and hold their color pad. When the neon green flash strikes, release in milliseconds! False starts explode immediately. | ⏱️ Twitch Reflex |
-
----
-
-## 👥 Social Circles & The Karma Ledger
-
-- **Circle Isolation:** Keep work lunches and roommate groceries separate! Match histories, loss distributions, and player rosters are segregated per group (**College Gang 🎓**, **Office Friends 💼**, **Flatmates 🏠**, or create your own).
-- **Dynamic Archetypes:**
-  - 👑 **The ATM:** The group's most frequent payer.
-  - 🍀 **The Lucky One:** Has never paid—constantly dodging defeat!
-  - ⚡ **The Chooser / The Foodie:** Dominates wins and drives decision-making.
-- **Fairness Mode:** Toggle between weighted probabilities (giving frequent losers a break) and raw equal chance.
-- **Local-First & Cloud-Synced:** Works 100% offline via local storage (`AsyncStorage`) and seamlessly syncs game records to **Supabase PostgreSQL** whenever an internet connection is available.
+- **Instant Multiplayer:** 2–8 players can join using multi-touch interaction on a single device.
+- **Multiple Game Arenas:** Four fast-paced mini-games combining luck, reflexes, and reaction time.
+- **Social Circles:** Maintain separate groups for College Gang 🎓, Office Friends 💼, Flatmates 🏠, or create custom circles.
+- **Karma Ledger:** Track game history, player statistics, loss records, and group leaderboards.
+- **Fairness Mode:** A weighted probability system that considers previous outcomes to give frequent losers a better chance.
+- **Pure Chaos Mode:** Switch to equal-probability random outcomes for completely unpredictable games.
+- **Player Archetypes:** Discover group personalities like *The ATM* (frequent payer) and *The Lucky One* (never seems to lose).
+- **Immersive Feedback:** Animated interactions, haptic responses, and MP3 sound effects make every round feel like a party game.
+- **Offline-First Experience:** Game data is stored locally and can sync with Supabase when an internet connection is available.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🎮 Game Modes
 
-- **Framework:** [React Native 0.88](https://reactnative.dev/) with [Expo SDK 58](https://expo.dev/) (New Architecture ready)
-- **Language:** TypeScript 5.8 (Strict typing, 0 type errors, 0 lint warnings)
-- **Animations & Gestures:** [React Native Reanimated 4](https://docs.swmansion.com/react-native-reanimated/) & [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/)
-- **Graphics:** [React Native SVG](https://github.com/software-mansion/react-native-svg) (custom vector illustrations, avatars, and party doodles)
-- **State Management:** [Zustand](https://github.com/pmndrs/zustand) with multi-key persistent hydration
-- **Haptics:** [Expo Haptics](https://docs.expo.dev/versions/latest/sdk/haptics/) for physical sensory feedback
-- **Cloud Backend:** [Supabase](https://supabase.com/) (PostgreSQL cloud ledger & RLS policies)
+| Game | How It Works |
+|---|---|
+| 💣 **Time Bomb** | Pass the phone before the hidden timer expires. Whoever holds the bomb when it detonates loses. |
+| 🎡 **Russian Roulette** | Spin the roulette wheel and let its physics-driven animation reveal the unlucky player. |
+| ⚡ **Tap Frenzy** | Tap your assigned screen zone as fast as possible within five seconds. The fewest taps loses. |
+| 🎯 **Reaction Standoff** | Hold your assigned area and release when the signal appears. The slowest reaction loses. False starts are penalised. |
 
----
-
-## 📱 How to Experience & Play the App
-
-### 1. 🤖 Download the Android APK (Direct Install)
-You can download and install the standalone Android `.apk` directly onto any Android smartphone without needing Expo Go or developer tools:
-1. Download the latest **`Who-Pays.apk`** from the [GitHub Releases](https://github.com/Saanvi-Tayal/Who-Pays-/releases) page or your EAS build download link.
-2. Tap the downloaded file on your Android device.
-3. If Android prompts *"File might be harmful"* or *"Install unknown apps"*, tap **Settings** ➔ toggle **Allow from this source** ➔ tap **Install**.
-4. Launch **Who Pays?** from your app drawer and start playing!
+Every game ends with an animated verdict screen revealing the player who has to take responsibility.
 
 ---
 
-### 2. 🌐 Play in Your Web Browser (Instant Demo)
-No installation required! The web build runs on **any device** (iOS Safari, Android Chrome, Mac, Windows):
-- Supports full touch controls, animations, multiplayer setup, and minigames.
-- Open the live web deployment or run the pre-built `dist/` bundle on any browser.
+## 👥 Social Circles & Karma Ledger
+
+Different friend groups have different dynamics. Who Pays? keeps them separate.
+
+Examples:
+- 🎓 **College Gang:** Track food bills, canteen expenses, and campus dares.
+- 💼 **Office Friends:** Settle lunch bills, coffee runs, and workplace challenges.
+- 🏠 **Flatmates:** Decide who handles groceries, dishes, and household chores.
+
+Each circle maintains its own player list, game history, statistics, and leaderboard.
+
+### The Fairness System
+
+Players can choose between two modes:
+
+- **Fairness Mode:** Uses weighted probabilities based on previous outcomes to reduce repeated losses.
+- **Pure Chaos:** Uses equal random selection probabilities, giving everyone the same chance.
+
+The Karma Ledger also tracks player tendencies and assigns fun personality archetypes based on group performance.
 
 ---
 
-### 3. ⚡ Test Live via Expo Go
-If you have the **Expo Go** app installed on your physical device (available free on [Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent) and [Apple App Store](https://apps.apple.com/app/expo-go/id982107779)):
-1. Run the cloud tunnel on the host:
-   ```bash
-   npx expo start --tunnel
-   ```
-2. Scan the terminal QR code using your phone's camera (iOS) or the Expo Go app (Android).
-3. The project loads live across any Wi-Fi or cellular network regardless of geographic location.
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| React Native 0.88 | Cross-platform mobile application |
+| Expo SDK 58 | Development and deployment |
+| TypeScript 5.8 | Application logic and type safety |
+| React Native Reanimated 4 | Smooth animations and transitions |
+| React Native Gesture Handler | Multi-touch gestures and interactions |
+| React Native SVG | Custom vector graphics and illustrations |
+| Zustand | State management |
+| AsyncStorage | Local persistence |
+| Expo Haptics | Tactile feedback |
+| Supabase PostgreSQL | Cloud database and game history |
 
 ---
 
-### 4. 💻 Run from Source (For Evaluators & Developers)
+## 🚀 Getting Started
+
+### Option 1: Install the Android APK
+
+The easiest way to experience the app is to install the Android build directly.
+
+<**[Download Who Pays? for Android](https://expo.dev/accounts/sin_v/projects/who-pays/builds/0fb355c0-569c-4a86-a4fb-d44b0ff55e89)**>
+
+1. Open the download link on your Android device.
+2. Download the APK.
+3. Allow installation from the browser or source if Android asks.
+4. Install and launch **Who Pays?**
+
+### Option 2: Run Locally
+
+**Prerequisites**
+- Node.js and npm
+- Git
+- Expo Go (for testing on a physical device)
+
+**1. Clone the repository**
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Saanvi-Tayal/Who-Pays-.git
 cd Who-Pays-
+```
 
-# 2. Install dependencies
+**2. Install dependencies**
+
+```bash
 npm install
+```
 
-# 3. Start the app (Recommended: LAN mode with fresh cache)
+**3. Start the development server**
+
+```bash
 npx expo start --host lan --clear
 ```
 
-> [!TIP]
-> **Always use `npx expo start --host lan --clear`** instead of default `expo start`. This automatically broadcasts the Metro server across your local Wi-Fi network and clears stale bundler caches, ensuring physical phones can scan the QR code and connect reliably.
->
-> In the terminal menu:
-> - Press **`a`** to open on a connected Android phone or emulator.
-> - Press **`w`** to open instantly in your web browser.
-> - Scan the on-screen QR code with **Expo Go** on your phone.
+**4. Launch the application**
 
-#### 🧪 Running Automated Tests (Optional)
+- Press `a` to open on an Android emulator.
+- Press `w` to launch the web version, if supported by the current build.
+- Scan the QR code using Expo Go to test on a physical device.
+
+**Tip:** Keep your phone and development machine connected to the same Wi-Fi network when using LAN mode.
+
+### Option 3: Run Tests
+
 ```bash
-# Run all game engine unit tests
+# Run game engine tests
 npm test
 
-# Run strict TypeScript check and ESLint
+# TypeScript checks
 npm run typecheck
+
+# ESLint
 npm run lint
 ```
 
 ---
 
-## 🎯 Gameplay Walkthrough (How It Works)
+## 🎯 How to Play
 
-1. **Multi-Touch Drop-In:** 2 to 8 players place and hold a finger on the phone's glass. Floating colored halos and countdown rings lock in active slots.
-2. **Group & Name Selection:** Select which circle is playing (College Gang, Office Friends, Flatmates) or enter custom player names. By default, players are auto-assigned as `Player A`, `Player B`... so games start in under 3 seconds.
-3. **Choose the Stakes:** Pick your dilemma category and consequence mode:
-   - 💳 **Who Pays?** (Food, drinks, coffee, takeout)
-   - 🍕 **Awkward Duty** (Taking out trash, talking to landlord, washing dishes)
-   - ⚖️ **The Ledger Vengeance** (Settling historic debts)
-   - 🎵 **Aux Cord Dictator** (Losing music control for the car ride)
-   - 📵 **Screen Time Penalty** (Phone face-down for 1 hour)
-4. **Play the Arena & Reveal Verdict:** The game resolves the outcome with winner tags, floating crowns, and an animated loser card. Tap **Stakes ⚡** to jump straight to another round, or **Check Karma ✨** to view updated standings.
+1. **Drop In:** Everyone places a finger on the shared screen. The app detects players and assigns each a unique colour.
+2. **Choose Your Circle:** Select a saved group or create a custom group with your friends.
+3. **Set the Stakes:** Decide what the loser has to do — pay the bill, take out the trash, surrender the aux, or something else.
+4. **Choose Your Arena:** Pick a mini-game and let the competition begin.
+5. **Reveal the Verdict:** Watch the animated result screen reveal the loser.
+6. **Check Your Karma:** Record the result, update group statistics, and challenge everyone to a rematch.
 
----
-
-## 📄 License
-MIT © 2026 Who Pays? Team
