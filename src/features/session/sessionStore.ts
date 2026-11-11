@@ -36,6 +36,7 @@ export interface MatchResult {
   winnerNames?: string[];
   metrics?: Record<string, unknown>;
   createdAt: number;
+  isDemo?: boolean;
 }
 
 export interface CircleGroup {
@@ -58,6 +59,7 @@ interface SessionState {
   circles: CircleGroup[];
   circleRosters: Record<string, PlayerSlot[]>;
   isCloudConnected: boolean;
+  hasDemoData: boolean;
 
   // Actions
   setRegisteredSlots: (slots: PlayerSlot[]) => void;
@@ -66,6 +68,8 @@ interface SessionState {
   updateSlotAvatar: (slotId: string, avatarKey: string) => void;
   addPlayerToActiveCircle: (name?: string) => boolean;
   removePlayerFromActiveCircle: (slotId: string) => boolean;
+  clearDemoData: () => void;
+  removeDemoDataForCircle: (circleId: string) => void;
   setStakesMode: (mode: StakesModeId) => void;
   setSelectedCategory: (category: string) => void;
   selectGame: (game: GameId) => void;
@@ -81,17 +85,24 @@ interface SessionState {
 }
 
 const STORAGE_KEYS = {
-  SLOTS: '@who_pays_slots_v4',
-  HISTORY: '@who_pays_history_v4',
-  CIRCLES: '@who_pays_circles_v4',
-  ACTIVE_CIRCLE: '@who_pays_active_circle_v4',
-  CIRCLE_ROSTERS: '@who_pays_circle_rosters_v4',
+  SLOTS: '@who_pays_slots_v5',
+  HISTORY: '@who_pays_history_v5',
+  CIRCLES: '@who_pays_circles_v5',
+  ACTIVE_CIRCLE: '@who_pays_active_circle_v5',
+  CIRCLE_ROSTERS: '@who_pays_circle_rosters_v5',
 };
 
-export function createRosterForCircle(_circleId?: string): PlayerSlot[] {
+export const TEST_CIRCLE_PRESETS: Record<string, string[]> = {
+  '1': ['Gravit', 'Saanvi', 'Aman', 'Priya'],
+  '2': ['Alex', 'Sam', 'Jordan', 'Taylor'],
+  '3': ['Roomie 1', 'Roomie 2', 'Roomie 3', 'Roomie 4'],
+};
+
+export function createRosterForCircle(circleId?: string): PlayerSlot[] {
+  const preset = circleId && TEST_CIRCLE_PRESETS[circleId];
   return [0, 1, 2, 3].map((idx) => {
     const color = playerColors[idx % playerColors.length];
-    const defaultName = `Player ${String.fromCharCode(65 + idx)}`;
+    const defaultName = preset && preset[idx] ? preset[idx] : `Player ${String.fromCharCode(65 + idx)}`;
     return {
       id: `slot-${idx + 1}`,
       colorId: color.id,
@@ -104,10 +115,130 @@ export function createRosterForCircle(_circleId?: string): PlayerSlot[] {
   });
 }
 
+export const TEST_BASELINE_HISTORY: MatchResult[] = [
+  // Circle 1: College Gang (id: '1')
+  {
+    id: 'test-college-1',
+    circleId: '1',
+    circleName: 'College Gang',
+    gameId: 'time_bomb',
+    stakesModeId: 'who_pays',
+    dilemma: 'Late Night Chai & Maggi ☕',
+    loserSlotId: 'slot-3',
+    loserName: 'Aman',
+    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
+    winnerNames: ['Gravit', 'Saanvi', 'Priya'],
+    createdAt: Date.now() - 3600000 * 2,
+    isDemo: true,
+  },
+  {
+    id: 'test-college-2',
+    circleId: '1',
+    circleName: 'College Gang',
+    gameId: 'roulette',
+    stakesModeId: 'who_pays',
+    dilemma: 'Who Pays for Biryani? 🍛',
+    loserSlotId: 'slot-2',
+    loserName: 'Saanvi',
+    winnerSlotIds: ['slot-1', 'slot-3', 'slot-4'],
+    winnerNames: ['Gravit', 'Aman', 'Priya'],
+    createdAt: Date.now() - 3600000 * 24,
+    isDemo: true,
+  },
+  {
+    id: 'test-college-3',
+    circleId: '1',
+    circleName: 'College Gang',
+    gameId: 'reaction_standoff',
+    stakesModeId: 'who_pays',
+    dilemma: 'Canteen Samosas 🥟',
+    loserSlotId: 'slot-3',
+    loserName: 'Aman',
+    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
+    winnerNames: ['Gravit', 'Saanvi', 'Priya'],
+    createdAt: Date.now() - 3600000 * 48,
+    isDemo: true,
+  },
+
+  // Circle 2: Office Friends (id: '2')
+  {
+    id: 'test-office-1',
+    circleId: '2',
+    circleName: 'Office Friends',
+    gameId: 'tap_frenzy',
+    stakesModeId: 'who_pays',
+    dilemma: 'Friday Coffee Run ☕',
+    loserSlotId: 'slot-1',
+    loserName: 'Alex',
+    winnerSlotIds: ['slot-2', 'slot-3', 'slot-4'],
+    winnerNames: ['Sam', 'Jordan', 'Taylor'],
+    createdAt: Date.now() - 3600000 * 4,
+    isDemo: true,
+  },
+  {
+    id: 'test-office-2',
+    circleId: '2',
+    circleName: 'Office Friends',
+    gameId: 'roulette',
+    stakesModeId: 'awkward_duty',
+    dilemma: 'Team Lunch Bill 🍕',
+    loserSlotId: 'slot-3',
+    loserName: 'Jordan',
+    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
+    winnerNames: ['Alex', 'Sam', 'Taylor'],
+    createdAt: Date.now() - 3600000 * 28,
+    isDemo: true,
+  },
+  {
+    id: 'test-office-3',
+    circleId: '2',
+    circleName: 'Office Friends',
+    gameId: 'time_bomb',
+    stakesModeId: 'who_pays',
+    dilemma: 'Morning Donut Duty 🍩',
+    loserSlotId: 'slot-1',
+    loserName: 'Alex',
+    winnerSlotIds: ['slot-2', 'slot-3', 'slot-4'],
+    winnerNames: ['Sam', 'Jordan', 'Taylor'],
+    createdAt: Date.now() - 3600000 * 52,
+    isDemo: true,
+  },
+
+  // Circle 3: Flatmates (id: '3')
+  {
+    id: 'test-flatmates-1',
+    circleId: '3',
+    circleName: 'Flatmates',
+    gameId: 'time_bomb',
+    stakesModeId: 'who_pays',
+    dilemma: 'Grocery & Milk Run 🥛',
+    loserSlotId: 'slot-2',
+    loserName: 'Roomie 2',
+    winnerSlotIds: ['slot-1', 'slot-3', 'slot-4'],
+    winnerNames: ['Roomie 1', 'Roomie 3', 'Roomie 4'],
+    createdAt: Date.now() - 3600000 * 6,
+    isDemo: true,
+  },
+  {
+    id: 'test-flatmates-2',
+    circleId: '3',
+    circleName: 'Flatmates',
+    gameId: 'roulette',
+    stakesModeId: 'who_pays',
+    dilemma: 'Who Pays Wi-Fi Bill? 📶',
+    loserSlotId: 'slot-3',
+    loserName: 'Roomie 3',
+    winnerSlotIds: ['slot-1', 'slot-2', 'slot-4'],
+    winnerNames: ['Roomie 1', 'Roomie 2', 'Roomie 4'],
+    createdAt: Date.now() - 3600000 * 30,
+    isDemo: true,
+  },
+];
+
 const INITIAL_CIRCLES: CircleGroup[] = [
-  { id: '1', name: 'College Gang', members: 4, decisions: 0, emoji: '🎓' },
-  { id: '2', name: 'Office Friends', members: 4, decisions: 0, emoji: '💼' },
-  { id: '3', name: 'Flatmates', members: 4, decisions: 0, emoji: '🏠' },
+  { id: '1', name: 'College Gang', members: 4, decisions: 3, emoji: '🎓' },
+  { id: '2', name: 'Office Friends', members: 4, decisions: 3, emoji: '💼' },
+  { id: '3', name: 'Flatmates', members: 4, decisions: 2, emoji: '🏠' },
 ];
 
 const INITIAL_CIRCLE_ROSTERS: Record<string, PlayerSlot[]> = {
@@ -121,23 +252,50 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   selectedMode: 'who_pays',
   selectedCategory: 'Where to Eat?',
   selectedGame: 'time_bomb',
-  lastResult: null,
-  history: [],
+  lastResult: TEST_BASELINE_HISTORY[0],
+  history: TEST_BASELINE_HISTORY,
   fairnessMode: true,
   activeCircle: INITIAL_CIRCLES[0],
   circles: INITIAL_CIRCLES,
   circleRosters: INITIAL_CIRCLE_ROSTERS,
+  hasDemoData: true,
   isCloudConnected: isSupabaseConfigured(),
 
   setRegisteredSlots: (slots) => {
-    const { activeCircle, circleRosters } = get();
+    const { activeCircle, circleRosters, history, circles } = get();
+
+    // When real people register/touch screen, remove demo test data for this active circle
+    const updatedHistory = history.filter(
+      (m) => !(m.isDemo && (m.circleId === activeCircle.id || (!m.circleId && activeCircle.id === '1')))
+    );
+    const realDecisions = updatedHistory.filter((m) => m.circleId === activeCircle.id).length;
+    const updatedCircle: CircleGroup = {
+      ...activeCircle,
+      members: slots.length,
+      decisions: realDecisions,
+    };
+    const updatedCircles = circles.map((c) =>
+      c.id === activeCircle.id ? updatedCircle : c
+    );
     const updatedRosters = {
       ...circleRosters,
       [activeCircle.id]: slots,
     };
-    set({ slots, circleRosters: updatedRosters });
+
+    set({
+      slots,
+      circleRosters: updatedRosters,
+      history: updatedHistory,
+      activeCircle: updatedCircle,
+      circles: updatedCircles,
+      hasDemoData: updatedHistory.some((m) => m.isDemo),
+    });
+
     AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(slots)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updatedHistory)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedCircle)).catch(() => {});
   },
 
   toggleSlotActive: (slotId) => {
@@ -164,9 +322,34 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         ...state.circleRosters,
         [state.activeCircle.id]: updated,
       };
+
+      // User customizing player names removes demo test data for this circle
+      const updatedHistory = state.history.filter(
+        (m) => !(m.isDemo && (m.circleId === state.activeCircle.id || (!m.circleId && state.activeCircle.id === '1')))
+      );
+      const realDecisions = updatedHistory.filter((m) => m.circleId === state.activeCircle.id).length;
+      const updatedCircle: CircleGroup = {
+        ...state.activeCircle,
+        decisions: realDecisions,
+      };
+      const updatedCircles = state.circles.map((c) =>
+        c.id === state.activeCircle.id ? updatedCircle : c
+      );
+
       AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(updated)).catch(() => {});
       AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
-      return { slots: updated, circleRosters: updatedRosters };
+      AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updatedHistory)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedCircle)).catch(() => {});
+
+      return {
+        slots: updated,
+        circleRosters: updatedRosters,
+        history: updatedHistory,
+        activeCircle: updatedCircle,
+        circles: updatedCircles,
+        hasDemoData: updatedHistory.some((m) => m.isDemo),
+      };
     });
   },
 
@@ -186,8 +369,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   addPlayerToActiveCircle: (name?: string) => {
-    const { slots, activeCircle, circleRosters, circles } = get();
+    const { slots, activeCircle, circleRosters, circles, history } = get();
     if (slots.length >= 8) return false;
+
+    // Remove demo test data for this circle when user adds their own person!
+    const updatedHistory = history.filter(
+      (m) => !(m.isDemo && (m.circleId === activeCircle.id || (!m.circleId && activeCircle.id === '1')))
+    );
+    const realDecisions = updatedHistory.filter((m) => m.circleId === activeCircle.id).length;
 
     const nextIdx = slots.length;
     const color = playerColors[nextIdx % playerColors.length];
@@ -212,6 +401,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const updatedCircle: CircleGroup = {
       ...activeCircle,
       members: updatedSlots.length,
+      decisions: realDecisions,
     };
     const updatedCircles = circles.map((c) =>
       c.id === activeCircle.id ? updatedCircle : c
@@ -222,18 +412,27 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       circleRosters: updatedRosters,
       activeCircle: updatedCircle,
       circles: updatedCircles,
+      history: updatedHistory,
+      hasDemoData: updatedHistory.some((m) => m.isDemo),
     });
 
     AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(updatedSlots)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedCircle)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updatedHistory)).catch(() => {});
     return true;
   },
 
   removePlayerFromActiveCircle: (slotId: string) => {
-    const { slots, activeCircle, circleRosters, circles } = get();
+    const { slots, activeCircle, circleRosters, circles, history } = get();
     if (slots.length <= 2) return false;
+
+    // Remove demo test data for this circle when user removes a person!
+    const updatedHistory = history.filter(
+      (m) => !(m.isDemo && (m.circleId === activeCircle.id || (!m.circleId && activeCircle.id === '1')))
+    );
+    const realDecisions = updatedHistory.filter((m) => m.circleId === activeCircle.id).length;
 
     const updatedSlots = slots.filter((s) => s.id !== slotId);
     const updatedRosters = {
@@ -243,6 +442,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const updatedCircle: CircleGroup = {
       ...activeCircle,
       members: updatedSlots.length,
+      decisions: realDecisions,
     };
     const updatedCircles = circles.map((c) =>
       c.id === activeCircle.id ? updatedCircle : c
@@ -253,13 +453,91 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       circleRosters: updatedRosters,
       activeCircle: updatedCircle,
       circles: updatedCircles,
+      history: updatedHistory,
+      hasDemoData: updatedHistory.some((m) => m.isDemo),
     });
 
     AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(updatedSlots)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedCircle)).catch(() => {});
     AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updatedHistory)).catch(() => {});
     return true;
+  },
+
+  clearDemoData: () => {
+    set((state) => {
+      const cleanHistory = state.history.filter((m) => !m.isDemo);
+      const updatedCircles = state.circles.map((c) => ({
+        ...c,
+        decisions: cleanHistory.filter((m) => m.circleId === c.id).length,
+      }));
+      const updatedActiveCircle = {
+        ...state.activeCircle,
+        decisions: cleanHistory.filter((m) => m.circleId === state.activeCircle.id).length,
+      };
+
+      // Reset default slots to clean unopinionated Player A, B, C, D
+      const cleanSlots = [0, 1, 2, 3].map((idx) => {
+        const color = playerColors[idx % playerColors.length];
+        return {
+          id: `slot-${idx + 1}`,
+          colorId: color.id,
+          colorHex: color.main,
+          contrastText: color.contrastText,
+          name: `Player ${String.fromCharCode(65 + idx)}`,
+          avatarKey: `AV-0${idx + 1}`,
+          isActive: true,
+        };
+      });
+
+      const updatedRosters = {
+        ...state.circleRosters,
+        [state.activeCircle.id]: cleanSlots,
+      };
+
+      AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(cleanHistory)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedActiveCircle)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(cleanSlots)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.CIRCLE_ROSTERS, JSON.stringify(updatedRosters)).catch(() => {});
+
+      return {
+        history: cleanHistory,
+        circles: updatedCircles,
+        activeCircle: updatedActiveCircle,
+        slots: cleanSlots,
+        circleRosters: updatedRosters,
+        hasDemoData: false,
+      };
+    });
+  },
+
+  removeDemoDataForCircle: (circleId: string) => {
+    set((state) => {
+      const updatedHistory = state.history.filter(
+        (m) => !(m.isDemo && (m.circleId === circleId || (!m.circleId && circleId === '1')))
+      );
+      const realDecisions = updatedHistory.filter((m) => m.circleId === circleId).length;
+      const updatedCircles = state.circles.map((c) =>
+        c.id === circleId ? { ...c, decisions: realDecisions } : c
+      );
+      const updatedActiveCircle =
+        state.activeCircle.id === circleId
+          ? { ...state.activeCircle, decisions: realDecisions }
+          : state.activeCircle;
+
+      AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updatedHistory)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedActiveCircle)).catch(() => {});
+
+      return {
+        history: updatedHistory,
+        circles: updatedCircles,
+        activeCircle: updatedActiveCircle,
+        hasDemoData: updatedHistory.some((m) => m.isDemo),
+      };
+    });
   },
 
   setStakesMode: (selectedMode) => set({ selectedMode }),
@@ -285,22 +563,32 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       loserName,
       winnerNames,
       dilemma: result.dilemma || selectedCategory || 'Who Pays?',
+      isDemo: false,
     };
 
     set((state) => {
-      const updatedHistory = [enrichedResult, ...state.history];
+      // Remove demo test matches for this circle when a real live game is completed
+      const cleanHistory = state.history.filter(
+        (m) => !(m.isDemo && (m.circleId === activeCircle.id || (!m.circleId && activeCircle.id === '1')))
+      );
+      const updatedHistory = [enrichedResult, ...cleanHistory];
       AsyncStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updatedHistory)).catch(() => {});
 
-      // Increment active circle decisions
+      const realCircleMatches = updatedHistory.filter((m) => m.circleId === activeCircle.id);
       const updatedCircles = state.circles.map((c) =>
-        c.id === activeCircle.id ? { ...c, decisions: c.decisions + 1 } : c
+        c.id === activeCircle.id ? { ...c, decisions: realCircleMatches.length } : c
       );
+      const updatedActiveCircle = { ...activeCircle, decisions: realCircleMatches.length };
+
       AsyncStorage.setItem(STORAGE_KEYS.CIRCLES, JSON.stringify(updatedCircles)).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_CIRCLE, JSON.stringify(updatedActiveCircle)).catch(() => {});
 
       return {
         lastResult: enrichedResult,
         history: updatedHistory,
         circles: updatedCircles,
+        activeCircle: updatedActiveCircle,
+        hasDemoData: updatedHistory.some((m) => m.isDemo),
       };
     });
 
@@ -355,7 +643,19 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   addCircle: (circle) => {
-    const newSlots = createRosterForCircle(circle.id);
+    const newSlots = [0, 1, 2, 3].map((idx) => {
+      const color = playerColors[idx % playerColors.length];
+      return {
+        id: `slot-${idx + 1}`,
+        colorId: color.id,
+        colorHex: color.main,
+        contrastText: color.contrastText,
+        name: `Player ${String.fromCharCode(65 + idx)}`,
+        avatarKey: `AV-0${idx + 1}`,
+        isActive: true,
+      };
+    });
+
     set((state) => {
       const updatedCircles = [...state.circles, circle];
       const updatedRosters = {
@@ -377,7 +677,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   applyGroupToSlots: (circleId) => {
     set((state) => {
-      // If this circle has a saved roster, restore it; otherwise create clean Player A, Player B... slots
       const existingRoster = state.circleRosters[circleId];
       if (existingRoster && existingRoster.length > 0) {
         AsyncStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(existingRoster)).catch(() => {});
@@ -425,7 +724,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       set({
         isCloudConnected: isSupabaseConfigured(),
         ...(savedSlots ? { slots: JSON.parse(savedSlots) } : {}),
-        ...(savedHistory ? { history: JSON.parse(savedHistory) } : {}),
+        ...(savedHistory
+          ? {
+              history: JSON.parse(savedHistory),
+              hasDemoData: JSON.parse(savedHistory).some((m: MatchResult) => m.isDemo),
+            }
+          : {}),
         ...(savedCircles ? { circles: JSON.parse(savedCircles) } : {}),
         ...(savedActiveCircle ? { activeCircle: JSON.parse(savedActiveCircle) } : {}),
         ...(savedRosters ? { circleRosters: JSON.parse(savedRosters) } : {}),

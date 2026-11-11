@@ -40,7 +40,7 @@ function getGameEmoji(gameId: string): string {
 }
 
 export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> = ({ navigation }) => {
-  const { slots, history, circles, activeCircle, setActiveCircle, isCloudConnected } = useSessionStore();
+  const { slots, history, circles, activeCircle, setActiveCircle, isCloudConnected, clearDemoData } = useSessionStore();
   const activeSlots = slots.filter((s) => s.isActive);
 
   // Filter history strictly for the currently selected circle
@@ -49,6 +49,10 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
       (m) => m.circleId === activeCircle.id || (!m.circleId && activeCircle.id === '1')
     );
   }, [history, activeCircle.id]);
+
+  const isCircleDemo = useMemo(() => {
+    return circleHistory.some((m) => m.isDemo);
+  }, [circleHistory]);
 
   // Dynamically compute real-time loss counts from this circle's match history
   const playerStats = useMemo(() => {
@@ -196,6 +200,32 @@ export const GroupHistoryScreen: React.FC<RootStackScreenProps<'GroupHistory'>> 
             <ThemedText variant="caption" style={styles.cloudBadgeText}>
               Supabase Ledger Synced
             </ThemedText>
+          </View>
+        )}
+
+        {/* Test Data Notification for Judges */}
+        {isCircleDemo && (
+          <View style={styles.demoBanner}>
+            <View style={styles.demoTextWrap}>
+              <View style={styles.demoBadgeRow}>
+                <ThemedText style={styles.demoTag}>TEST DATA</ThemedText>
+                <ThemedText style={styles.demoHeading}>Judge Evaluation Mode</ThemedText>
+              </View>
+              <ThemedText variant="caption" style={styles.demoSubtitle}>
+                Sample match records loaded for review. Adding people or playing a match automatically clears this!
+              </ThemedText>
+            </View>
+            <Pressable
+              onPress={() => {
+                triggerHaptic('medium');
+                clearDemoData();
+              }}
+              style={styles.clearDemoButton}
+              accessibilityRole="button"
+              accessibilityLabel="Clear Test Data"
+            >
+              <ThemedText style={styles.clearDemoText}>Clear Test Data ✕</ThemedText>
+            </Pressable>
           </View>
         )}
 
@@ -600,6 +630,58 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     fontSize: 12,
+  },
+  demoBanner: {
+    backgroundColor: 'rgba(255, 64, 129, 0.1)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 64, 129, 0.35)',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  demoTextWrap: {
+    gap: 4,
+  },
+  demoBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  demoTag: {
+    backgroundColor: '#FF4081',
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '900',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+    overflow: 'hidden',
+    letterSpacing: 0.5,
+  },
+  demoHeading: {
+    color: '#FF80AB',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  demoSubtitle: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  clearDemoButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 64, 129, 0.18)',
+    borderWidth: 1,
+    borderColor: '#FF4081',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 5,
+    borderRadius: borderRadius.full,
+  },
+  clearDemoText: {
+    color: '#FF4081',
+    fontSize: 11,
+    fontWeight: '800',
   },
   bottomNavSection: {
     marginTop: spacing.xs,
